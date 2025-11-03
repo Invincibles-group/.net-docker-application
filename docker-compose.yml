@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  nginxapp:
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    container_name: nginx_app_container
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - taskflow_app_nw
+
+    depends_on:
+      - taskflow_app
+  taskflow_db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: taskflow_db
+    environment:
+      SA_PASSWORD: "root@123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - taskflow_app_nw
+    restart: always
+
+  taskflow_app:
+    build: 
+      context: ./src/TaskFlow.Web
+      dockerfile: dockerfile
+    container_name: taskflow_web
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=taskflow_db;Database=TaskFlowDb;User ID=sa;Password=root@123;TrustServerCertificate=True;
+    ports:
+      - "8080:8080"
+    networks:
+      - taskflow_app_nw
+    depends_on:
+      - taskflow_db
+    restart: always
+volumes:
+  mssql_data:
+networks:
+  taskflow_app_nw:

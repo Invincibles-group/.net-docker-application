@@ -1,0 +1,9 @@
+@model IEnumerable<TaskFlow.Web.Models.TaskItem>
+
+<h2>Tasks</h2>
+<ul>
+    @foreach (var t in Model)
+    {
+        <li>@t.Title - @t.Status</li>
+    }
+</ul>
